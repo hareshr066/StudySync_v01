@@ -21,7 +21,7 @@
 
 ## 🌟 Overview
 
-**StudySync** is a production-grade, AI-powered personal study workspace designed to solve the fragmented study experience students face today. Instead of juggling detached PDFs, notes, flashcard apps, and ChatGPT tabs, StudySync unifies your entire learning workflow into one cohesive, source-grounded hub:
+**StudySync** is an AI-powered personal study workspace designed to solve the fragmented study experience students face today. Instead of juggling detached PDFs, notes, flashcard apps, and ChatGPT tabs, StudySync unifies your entire learning workflow into one cohesive, source-grounded hub:
 
 1. **Attach Your Sources**: Upload lecture PDFs, syllabi, notes, and research materials into focused **Notebook Workspaces**.
 2. **Grounded AI Tutor**: Chat with Google Gemini with multi-document context grounding and **verifiable page citations** (`[p. 1]`, `[p. 5]`).
@@ -42,7 +42,7 @@
 | 👥 **Study Groups & Invite Links** | Role-based collaboration with shared decks, member directories, and one-click cryptographic invite links. |
 | ⚡ **Live WebSocket Study Rooms** | Real-time synchronized study sessions with live member presence and group chat. |
 | 📊 **Genuine Study Analytics** | GitHub-style 30-day activity heatmap, 7-day review volume charts, and mastery progression metrics. |
-| 🛡️ **Zero-IDOR Security** | Complete ownership validation and cascade deletions ensuring data integrity and user isolation. |
+| 🛡️ **Resource Ownership & Isolation** | Scoped access validation and cascade deletions to prevent unauthorized cross-tenant resource access. |
 
 ---
 
@@ -104,7 +104,7 @@ Ask conceptual questions about your study documents. StudySync's AI assistant gr
 
 ```
 User: "What are the key points in this ML roadmap?"
-AI: "According to [Fcking Finalssssss.pdf, p. 1], the roadmap establishes a 5-stage progression:
+AI: "According to [ML_Engineering_Roadmap.pdf, p. 1], the roadmap establishes a 5-stage progression:
      1. Python & Core Mathematics [p. 2]
      2. Supervised & Unsupervised Learning Algorithms [p. 3-5]
      3. Deep Learning & Neural Architectures [p. 6-8]
@@ -284,7 +284,7 @@ Open `http://localhost:5173` in your browser.
 
 ## 🔒 Security Best Practices
 - **Never commit `.env` files**: All secrets are ignored via `.gitignore`.
-- **RBAC & IDOR Verification**: Every query enforces strict ownership verification across MongoDB `ObjectId` references.
+- **Access Controls & Authorization**: Endpoints enforce user ownership validation across MongoDB `ObjectId` references to mitigate unauthorized cross-user access.
 - **Cascading Integrity**: Deleting a deck, notebook, or document automatically cascades cleanup to all associated cards, notes, quiz attempts, and sessions.
 
 ---
