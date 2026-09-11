@@ -15,6 +15,7 @@ def connect_to_mongodb() -> None:
     global _client, _database
     _client = MongoClient(
         settings.MONGODB_URI,
+        tz_aware=True,
         serverSelectionTimeoutMS=5000,
         connectTimeoutMS=5000,
         socketTimeoutMS=5000

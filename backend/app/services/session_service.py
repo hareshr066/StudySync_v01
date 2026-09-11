@@ -7,6 +7,22 @@ from bson import ObjectId
 from app.db.mongodb import get_database
 
 
+def _to_utc(dt: Any) -> Optional[datetime]:
+    """Ensure datetime is offset-aware UTC. If naive, attach UTC timezone."""
+    if dt is None:
+        return None
+    if isinstance(dt, str):
+        try:
+            dt = datetime.fromisoformat(dt)
+        except Exception:
+            return None
+    if isinstance(dt, datetime):
+        if dt.tzinfo is None:
+            return dt.replace(tzinfo=timezone.utc)
+        return dt.astimezone(timezone.utc)
+    return None
+
+
 class SessionService:
     """Tracks study sessions for analytics."""
 
@@ -23,11 +39,13 @@ class SessionService:
             "ended_at": None,
             "cards_reviewed": 0,
             "duration_seconds": 0,
+            "created_at": now,
         }
-        result = self.db.study_sessions.insert_one(doc)
-        return self._format(doc, str(result.inserted_id))
+        res = self.db.study_sessions.insert_one(doc)
+        doc["_id"] = res.inserted_id
+        return self._format(doc, str(res.inserted_id))
 
-    def end_session(self, session_id: str, user_id: str, cards_reviewed: int = 0) -> Optional[Dict[str, Any]]:
+    def end_session(self, session_id: str, user_id: str, cards_reviewed: int) -> Optional[Dict[str, Any]]:
         """End a study session and calculate duration."""
         try:
             session = self.db.study_sessions.find_one({"_id": ObjectId(session_id), "user_id": user_id})
@@ -37,8 +55,8 @@ class SessionService:
             return None
 
         now = datetime.now(timezone.utc)
-        started = session["started_at"]
-        duration = int((now - started).total_seconds()) if isinstance(started, datetime) else 0
+        started = _to_utc(session.get("started_at"))
+        duration = int((now - started).total_seconds()) if started else 0
 
         self.db.study_sessions.update_one(
             {"_id": ObjectId(session_id)},
@@ -89,11 +107,11 @@ class SessionService:
         if not user:
             return
 
-        last_study = user.get("last_study_date")
+        last_study = _to_utc(user.get("last_study_date"))
         current_streak = user.get("current_streak", 0)
         longest_streak = user.get("longest_streak", 0)
 
-        if last_study and isinstance(last_study, datetime):
+        if last_study:
             last_day = last_study.replace(hour=0, minute=0, second=0, microsecond=0)
             diff = (today - last_day).days
             if diff == 0:

@@ -16,7 +16,7 @@ def test_db():
     uri = os.environ.get("MONGODB_URI", "mongodb://localhost:27017")
     db_name = os.environ.get("MONGODB_DATABASE", "studysync_test")
     try:
-        client = MongoClient(uri, serverSelectionTimeoutMS=3000)
+        client = MongoClient(uri, tz_aware=True, serverSelectionTimeoutMS=3000)
         client.admin.command("ping")
         db = client[db_name]
         yield db

@@ -623,37 +623,51 @@ export default function NotebookDetailPage() {
                       <span className="font-medium text-sm text-surface-900">{currentDoc.title}</span>
                       <Badge variant="secondary" className="text-[10px] ml-2 capitalize">{currentDoc.mime_type?.split('/')[1] || 'file'}</Badge>
                     </div>
-                    <a
-                      href={`/api/v1/documents/${currentDoc._id || currentDoc.id}/content?token=${localStorage.getItem('access_token') || ''}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs font-medium text-primary-600 hover:text-primary-700 transition-colors"
-                    >
-                      Download
-                    </a>
+                    {(() => {
+                      const apiBase = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+                      const docContentUrl = `${apiBase}/api/v1/documents/${currentDoc._id || currentDoc.id}/content?token=${localStorage.getItem('access_token') || ''}`;
+                      return (
+                        <>
+                          <a
+                            href={docContentUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs font-medium text-primary-600 hover:text-primary-700 transition-colors"
+                          >
+                            Download
+                          </a>
+                        </>
+                      );
+                    })()}
                   </div>
                   <div className="flex-1 flex flex-col items-center justify-start bg-surface-100 relative overflow-y-auto p-4">
                     {currentDoc.mime_type === 'application/pdf' ? (
                       <div className="w-full flex justify-center">
-                        <Document
-                          file={`/api/v1/documents/${currentDoc._id || currentDoc.id}/content?token=${localStorage.getItem('access_token') || ''}`}
-                          options={{
-                            httpHeaders: {
-                              Authorization: `Bearer ${localStorage.getItem('access_token') || ''}`
-                            }
-                          }}
-                          onLoadSuccess={({ numPages }) => setNumPages(numPages)}
-                          loading={<Spinner size="lg" />}
-                          error={<div className="text-center py-12 text-red-500 text-sm">Failed to load PDF. The document may still be processing.</div>}
-                          className="shadow-sm border border-surface-200"
-                        >
-                          <Page
-                            pageNumber={pageNumber}
-                            scale={pdfScale}
-                            renderTextLayer={true}
-                            renderAnnotationLayer={true}
-                          />
-                        </Document>
+                        {(() => {
+                          const apiBase = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+                          const docContentUrl = `${apiBase}/api/v1/documents/${currentDoc._id || currentDoc.id}/content?token=${localStorage.getItem('access_token') || ''}`;
+                          return (
+                            <Document
+                              file={docContentUrl}
+                              options={{
+                                httpHeaders: {
+                                  Authorization: `Bearer ${localStorage.getItem('access_token') || ''}`
+                                }
+                              }}
+                              onLoadSuccess={({ numPages }) => setNumPages(numPages)}
+                              loading={<Spinner size="lg" />}
+                              error={<div className="text-center py-12 text-red-500 text-sm">Failed to load PDF. The document may still be processing.</div>}
+                              className="shadow-sm border border-surface-200"
+                            >
+                              <Page
+                                pageNumber={pageNumber}
+                                scale={pdfScale}
+                                renderTextLayer={true}
+                                renderAnnotationLayer={true}
+                              />
+                            </Document>
+                          );
+                        })()}
                       </div>
                     ) : (
                       <div className="w-full max-w-2xl bg-white p-8 rounded shadow-sm border border-surface-200">

@@ -7,6 +7,22 @@ from app.db.mongodb import get_database
 from app.services.sm2 import calculate_sm2, rating_to_quality
 
 
+def _to_utc(dt: Any) -> Optional[datetime]:
+    """Ensure datetime is offset-aware UTC. If naive, attach UTC timezone."""
+    if dt is None:
+        return None
+    if isinstance(dt, str):
+        try:
+            dt = datetime.fromisoformat(dt)
+        except Exception:
+            return None
+    if isinstance(dt, datetime):
+        if dt.tzinfo is None:
+            return dt.replace(tzinfo=timezone.utc)
+        return dt.astimezone(timezone.utc)
+    return None
+
+
 class StudyService:
     def __init__(self):
         self.db = get_database()
@@ -28,11 +44,13 @@ class StudyService:
         for card in all_cards:
             cid = str(card["_id"])
             review = reviews.get(cid)
-            if review and review.get("due_at") and review["due_at"] <= now:
-                due_cards.append((card, review))
-        due_cards.sort(key=lambda x: x[1]["due_at"])
+            if review and review.get("due_at"):
+                due_at = _to_utc(review["due_at"])
+                if due_at and due_at <= now:
+                    due_cards.append((card, review, due_at))
+        due_cards.sort(key=lambda x: x[2])
         if due_cards:
-            card, review = due_cards[0]
+            card, review, _ = due_cards[0]
             return self._format_study_card(card, review, is_new=False)
 
         # Priority 2: new cards (never reviewed)
@@ -111,10 +129,10 @@ class StudyService:
         reviewed_card_ids = {r["card_id"] for r in reviews}
 
         cards_studied = len(reviewed_card_ids)
-        cards_due = sum(1 for r in reviews if r.get("due_at") and r["due_at"] <= now)
-        cards_due_today = sum(1 for r in reviews if r.get("due_at") and r["due_at"] <= now)
+        cards_due = sum(1 for r in reviews if (d := _to_utc(r.get("due_at"))) is not None and d <= now)
+        cards_due_today = sum(1 for r in reviews if (d := _to_utc(r.get("due_at"))) is not None and d <= now)
         new_cards = total_cards - cards_studied
-        reviewed_today = sum(1 for r in reviews if r.get("last_reviewed_at") and r["last_reviewed_at"] >= today_start)
+        reviewed_today = sum(1 for r in reviews if (lr := _to_utc(r.get("last_reviewed_at"))) is not None and lr >= today_start)
         progress = (cards_studied / total_cards * 100) if total_cards > 0 else 0.0
 
         return {
@@ -153,9 +171,9 @@ class StudyService:
         reviewed_ids = {r["card_id"] for r in reviews}
 
         cards_studied = len(reviewed_ids)
-        cards_due = sum(1 for r in reviews if r.get("due_at") and r["due_at"] <= now)
+        cards_due = sum(1 for r in reviews if (d := _to_utc(r.get("due_at"))) is not None and d <= now)
         new_cards = total_cards - cards_studied
-        reviewed_today = sum(1 for r in reviews if r.get("last_reviewed_at") and r["last_reviewed_at"] >= today_start)
+        reviewed_today = sum(1 for r in reviews if (lr := _to_utc(r.get("last_reviewed_at"))) is not None and lr >= today_start)
         progress = (cards_studied / total_cards * 100) if total_cards > 0 else 0.0
 
         return {
@@ -169,6 +187,7 @@ class StudyService:
         }
 
     def _format_study_card(self, card, review, is_new):
+        due_at = _to_utc(review.get("due_at")) if review else None
         return {
             "id": str(card["_id"]),
             "deck_id": card["deck_id"],
@@ -178,5 +197,5 @@ class StudyService:
             "repetitions": review.get("repetitions", 0) if review else 0,
             "interval": review.get("interval", 0) if review else 0,
             "ease_factor": review.get("ease_factor", 2.5) if review else 2.5,
-            "due_at": review["due_at"].isoformat() if review and review.get("due_at") else None,
+            "due_at": due_at.isoformat() if due_at else None,
         }

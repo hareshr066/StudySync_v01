@@ -7,9 +7,12 @@ from bson import ObjectId
 from typing import List, Optional
 from fastapi import UploadFile
 
+import logging
 from app.db.mongodb import get_database
 from app.schemas.documents import DocumentInDB
 from app.services.ai_service import ai_service
+
+logger = logging.getLogger(__name__)
 
 UPLOAD_DIR = pathlib.Path(__file__).parent.parent.parent / "data" / "uploads"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)

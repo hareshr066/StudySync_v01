@@ -63,7 +63,8 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
     searchTimeout.current = setTimeout(async () => {
       try {
         const token = localStorage.getItem('access_token');
-        const res = await fetch(`/api/v1/search?q=${encodeURIComponent(query)}`, {
+        const apiBase = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+        const res = await fetch(`${apiBase}/api/v1/search?q=${encodeURIComponent(query)}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (res.ok) {
