@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+*.egg-info/
+dist/
+build/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+htmlcov/
+.coverage
+
+# Environment & Secrets - NEVER COMMIT
+.env
+.env.*
+!.env.example
+
+# Uploaded Files
+data/uploads/
+uploads/
+
+# IDE & OS
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
