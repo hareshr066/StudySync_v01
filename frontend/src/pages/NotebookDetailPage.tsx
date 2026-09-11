@@ -636,9 +636,11 @@ export default function NotebookDetailPage() {
                     {currentDoc.mime_type === 'application/pdf' ? (
                       <div className="w-full flex justify-center">
                         <Document
-                          file={{
-                            url: `/api/v1/documents/${currentDoc._id || currentDoc.id}/content?token=${localStorage.getItem('access_token') || ''}`,
-                            httpHeaders: { Authorization: `Bearer ${localStorage.getItem('access_token') || ''}` }
+                          file={`/api/v1/documents/${currentDoc._id || currentDoc.id}/content?token=${localStorage.getItem('access_token') || ''}`}
+                          options={{
+                            httpHeaders: {
+                              Authorization: `Bearer ${localStorage.getItem('access_token') || ''}`
+                            }
                           }}
                           onLoadSuccess={({ numPages }) => setNumPages(numPages)}
                           loading={<Spinner size="lg" />}

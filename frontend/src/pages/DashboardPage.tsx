@@ -4,7 +4,7 @@ import { useAuth } from '../hooks/useAuth';
 import { studyApi, sessionsApi, notebooksApi, documentsApi } from '../api';
 import type { StudyStats, StudySession } from '../types';
 import { 
-  BookOpen, Flame, Target, Compass, Sparkles, Clock, Folder, 
+  BookOpen, Flame, Target, Sparkles, Clock, Folder, 
   FileText, ArrowRight, Plus, Brain, Radio, CheckCircle2 
 } from 'lucide-react';
 import { Card, Badge, Button } from '../components/ui';
@@ -22,7 +22,7 @@ export default function DashboardPage() {
     Promise.all([
       studyApi.overallStats().then(r => setStats(r.data)).catch(() => {}),
       sessionsApi.list().then(r => setRecentSessions(r.data.sessions.slice(0, 3))).catch(() => {}),
-      notebooksApi.list(0, 4).then(r => setRecentNotebooks(r.data.notebooks || [])).catch(() => {}),
+      notebooksApi.list().then(r => setRecentNotebooks((r.data.notebooks || []).slice(0, 4))).catch(() => {}),
       documentsApi.list().then(r => setDocumentsCount(r.data.total || r.data.documents?.length || 0)).catch(() => {}),
     ]).finally(() => setLoading(false));
   }, []);
